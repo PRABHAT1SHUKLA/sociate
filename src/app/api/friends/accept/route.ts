@@ -1,6 +1,8 @@
 import { fetchRedis } from "@/helper/redis"
 import { getAuthSession } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { pusherServer } from "@/lib/pusher"
+import { toPusherKey } from "@/lib/utils"
 import z from "zod"
 
 export async function POST(req: Request) {
@@ -14,7 +16,6 @@ export async function POST(req: Request) {
     if(!session) {
       return new Response('Unauthorized', { status: 401 })
     }
-
     // Verify both users are not already friends
     const isAlreadyFriends = await fetchRedis('sismember', `user:${session?.user.id}:friends`, idToAdd)
 
@@ -22,20 +23,45 @@ export async function POST(req: Request) {
       return new Response("Already Friends", { status: 400 })
     }
 
-    const hasFriendRequest = await fetchRedis('smembers', `user:${session?.user.id}:incoming_friend_requests`, idToAdd)
+    const hasFriendRequest = await fetchRedis('sismember', `user:${session?.user.id}:incoming_friend_requests`, idToAdd)
 
     if(!hasFriendRequest) {
       return new Response('No friend request', { status: 400 })
     }
 
-    await db.sadd(`user:${session?.user.id}:friends`, idToAdd)
+    // below this is done for pusher for realtime.
+    const [userRaw, friendRaw] = (await Promise.all([
+      fetchRedis('get', `user:${session.user.id}`),
+      fetchRedis('get', `user:${idToAdd}`),
+    ])) as [string, string]
 
-    await db.sadd(`user:${idToAdd}:friends`, session?.user.id)
+    const user = JSON.parse(userRaw) as User
+    const friend = JSON.parse(friendRaw) as User
 
-    // If friend request is accepted then remove incoming friend request from db
-    // await db.srem(`user:${idToAdd}:incoming_friend_requests`, session?.user.id)
+    // notify added user
 
-    await db.srem(`user:${session?.user.id}:incoming_friend_requests`, idToAdd)
+    await Promise.all([
+      pusherServer.trigger(
+        toPusherKey(`user:${idToAdd}:friends`),
+        'new_friend',
+        user
+      ),
+      pusherServer.trigger(
+        toPusherKey(`user:${session.user.id}:friends`),
+        'new_friend',
+        friend
+      ),
+      db.sadd(`user:${session.user.id}:friends`, idToAdd),
+      db.sadd(`user:${idToAdd}:friends`, session.user.id),
+      db.srem(`user:${session.user.id}:incoming_friend_requests`, idToAdd),
+    ])
+
+    // If not using pusher then only these 3 statements will be there
+    // await db.sadd(`user:${session?.user.id}:friends`, idToAdd)
+
+    // await db.sadd(`user:${idToAdd}:friends`, session?.user.id)
+
+    // await db.srem(`user:${session?.user.id}:incoming_friend_requests`, idToAdd)
 
     return new Response('OK')
   } catch (error) {

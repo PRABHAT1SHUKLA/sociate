@@ -1,10 +1,12 @@
 "use client";
 
 import { Check, UserPlus, X } from "lucide-react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { Button } from "./ui/Button";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { pusherClient } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 
 interface FriendRequestsProps {
   incomingFriendRequests: IncomingFriendRequest[];
@@ -19,6 +21,29 @@ const FriendRequests: FC<FriendRequestsProps> = ({
   const [friendRequests, setFriendRequests] = useState<IncomingFriendRequest[]>(
     incomingFriendRequests
   );
+
+  // Implementing realtime feature  with pusher
+  useEffect(() => {
+    pusherClient.subscribe(
+      toPusherKey(`user:${sessionId}:incoming_friend_requests`)
+    )
+
+    const friendRequestHandler = ({
+      senderId,
+      senderEmail,
+    }: IncomingFriendRequest) => {
+      setFriendRequests((prev) => [...prev, { senderId, senderEmail }])
+    }
+
+    pusherClient.bind('incoming_friend_requests', friendRequestHandler)
+
+    return () => {
+      pusherClient.unsubscribe(
+        toPusherKey(`user:${sessionId}:incoming_friend_requests`)
+      )
+      pusherClient.unbind('incoming_friend_requests', friendRequestHandler)
+    }
+  }, [sessionId])
 
   // Function To Accept Friend request
   const acceptFriend = async (senderId: string) => {
@@ -55,7 +80,7 @@ const FriendRequests: FC<FriendRequestsProps> = ({
             {/* Check button */}
             <Button
               aria-label="accept friend"
-              className="w-8 h-8 bg-indigo-600 hover:bg-indigo-700 grid place-items-center rounded-full transition hover:shadow-md"
+              className=" bg-indigo-600 hover:bg-indigo-700 grid place-items-center rounded-full transition hover:shadow-md"
               onClick={() => acceptFriend(request.senderId)}
             >
               <Check className="font-semibold text-white w-3/4 h-3/4" />
@@ -64,7 +89,7 @@ const FriendRequests: FC<FriendRequestsProps> = ({
             {/* Cross Button */}
             <Button
               aria-label="deny friend"
-              className="w-8 h-8 bg-red-600 hover:bg-red-700 grid place-items-center rounded-full transition hover:shadow-md"
+              className="bg-red-600 hover:bg-red-700 grid place-items-center rounded-full transition hover:shadow-md"
               onClick={() => denyFriend(request.senderId)}
             >
               <X className="font-semibold text-white w-3/4 h-3/4" />

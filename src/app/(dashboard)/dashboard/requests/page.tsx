@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 const Page = async ({}) => {
   const session = await getAuthSession();
 
-  // if(!session) return notFound()
+  if(!session) return notFound()
 
   // Ids of people who sent current logged in user a friend request.
   const incomingSenderIds = (await fetchRedis(
@@ -27,9 +27,9 @@ const Page = async ({}) => {
   )
 
   return (
-    <main >
-      <h1 >Add a friend</h1>
-      <div>
+    <main className='pt-8' >
+      <h1 className='font-bold text-5xl mb-8'>Add a friend</h1>
+      <div className='flex flex-col gap-4'>
         <FriendRequests incomingFriendRequests={incomingFriendRequests} sessionId={session?.user.id} />
       </div>
     </main>
