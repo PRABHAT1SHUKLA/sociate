@@ -30,7 +30,8 @@ export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: getGoogleCredentials().clientId,
-      clientSecret: getGoogleCredentials().clientSecret
+      clientSecret: getGoogleCredentials().clientSecret,
+      allowDangerousEmailAccountLinking: true
     })
   ],
   callbacks: {
