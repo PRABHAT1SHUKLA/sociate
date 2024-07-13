@@ -9,9 +9,8 @@ import { getAuthSession } from "@/lib/auth";
 import { Sidebar } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { ReactNode } from "react";
-
 interface LayoutProps {
   children: ReactNode;
 }
@@ -36,7 +35,7 @@ const Layout = async ({ children }: LayoutProps) => {
   const session = await getAuthSession();
 
   if(!session) {
-    return notFound()
+    return redirect("/sign-in")
   }
 
   // Fetching All the friends of user
