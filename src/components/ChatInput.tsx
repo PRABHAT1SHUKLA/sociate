@@ -39,7 +39,7 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
           onKeyDown={(e) => {
             if(e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault()
-              sendMessage()
+              !isLoading && sendMessage()
             }
           }}
           rows={1}
@@ -59,7 +59,7 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
         </div>
 
         <div className='absolute right-0 bottom-0 flex justify-between py-2 pl-3 pr-2'>
-          <div className='flex-shrin-0'>
+          <div className='flex-shrink-0'>
             <Button isLoading={isLoading} disabled={isLoading} type='submit' onClick={sendMessage} className='rounded'>
               Post
             </Button>
