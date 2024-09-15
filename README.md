@@ -57,7 +57,7 @@ To set up **Talkative** locally, follow the steps below:
 
 ### Prerequisites
 
-- **Node.js** (v14 or later)
+- **Node.js** (v20 or later)
 - **Redis**: Ensure Redis is installed and running on your machine for real-time data handling.
 - **Google OAuth Credentials**: Set up Google OAuth in your Google Developer Console and get your `clientId` and `clientSecret`.
 
@@ -101,12 +101,12 @@ To set up **Talkative** locally, follow the steps below:
 ## 🔧 Project Structure
 
 ```
-/components     # UI and Reusable components like chat boxes, friend requests, etc.
-/app          # Pages for login, signup, and chat interface
+src/components     # UI and Reusable components like chat boxes, friend requests, etc.
+src/app          # Pages for login, signup, and chat interface
 src/app/api            # API routes for authentication, friend requests, and messages
-/utils          # Helper functions and utilities
+src/utils          # Helper functions and utilities
 /public         # Static assets (icons, images, etc.)
-/styles         # Global CSS and styling for the application
+src/styles         # Global CSS and styling for the application
 ```
 
 ---
