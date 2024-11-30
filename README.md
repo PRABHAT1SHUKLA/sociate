@@ -146,3 +146,4 @@ This project is licensed under the [MIT License](https://opensource.org/licenses
 ## 🎯 Contributing
 
 We welcome contributions! Feel free to fork the repo and submit pull requests. For major changes, open an issue to discuss improvements or features you'd like to see.
+# hotchat
